@@ -22,8 +22,8 @@ class TelloCv(object):
         self.drone.takeoff()
         self.container = av.open(self.drone.get_video_stream())
         self.vid_stream = self.container.streams.video[0]
-        green_lower = (30, 50, 50)
-        green_upper = (80, 255, 255)
+        green_lower = (0, 0, 203)
+        green_upper = (222, 178, 255)
         self.tracking = True
         self.track_cmd = ''
         self.speed = 20
@@ -60,6 +60,7 @@ class TelloCv(object):
                 self.track_cmd = cmd
 
         return image
+
 
 
 if __name__ == '__main__':
