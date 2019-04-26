@@ -22,7 +22,6 @@ class TelloCv(object):
         self.tracking = False
         self.init_drone()
         self.drone.takeoff()
-
         self.key = False
         self.container = av.open(self.drone.get_video_stream())
         self.vid_stream = self.container.streams.video[0]

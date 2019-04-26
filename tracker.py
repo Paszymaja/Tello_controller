@@ -17,7 +17,6 @@ class Tracker:
 
     def draw_arrows(self, frame):
         """Show the direction vector output in the cv2 window"""
-        #cv2.putText(frame,"Color:", (0, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, 255, thickness=2)
         cv2.arrowedLine(frame, (self.midx, self.midy),
                         (self.midx + self.xoffset, self.midy - self.yoffset),
                         (0, 0, 255), 5)
@@ -42,7 +41,6 @@ class Tracker:
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
                                 cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0]
-        center = None
 
         # only proceed if at least one contour was found
         if len(cnts) > 0:
