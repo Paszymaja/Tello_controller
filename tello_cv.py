@@ -3,6 +3,7 @@ import tellopy
 import cv2
 import numpy as np
 from tracker import Tracker
+from pynput import keyboard
 
 
 def main():
@@ -20,14 +21,17 @@ class TelloCv(object):
         self.drone = tellopy.Tello()
         self.init_drone()
         self.drone.takeoff()
+        self.key = False
         self.container = av.open(self.drone.get_video_stream())
         self.vid_stream = self.container.streams.video[0]
-        green_lower = (0, 0, 203)
-        green_upper = (222, 178, 255)
+        green_lower = (30, 50, 50)
+        green_upper = (80, 255, 255)
         self.tracking = True
         self.track_cmd = ''
         self.speed = 20
         self.tracker = Tracker(self.vid_stream.height, self.vid_stream.width, green_lower, green_upper)
+        self.key_listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
+        self.key_listener.start()
 
     def init_drone(self):
         self.drone.connect()
@@ -60,6 +64,20 @@ class TelloCv(object):
                 self.track_cmd = cmd
 
         return image
+
+    def on_press(self, key):
+        if key == keyboard.Key.up and self.tracking is False:
+            self.tracking = True
+            print('Tracking on')
+        elif key == keyboard.Key.down:
+            self.tracking = False
+            print('Tracking off')
+
+    def on_release(self, key):
+        if key == keyboard.Key.esc:
+            return False
+
+
 
 
 
