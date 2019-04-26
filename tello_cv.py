@@ -19,23 +19,24 @@ def main():
 class TelloCv(object):
     def __init__(self):
         self.drone = tellopy.Tello()
+        self.tracking = False
         self.init_drone()
         self.drone.takeoff()
+
         self.key = False
         self.container = av.open(self.drone.get_video_stream())
         self.vid_stream = self.container.streams.video[0]
         green_lower = (30, 50, 50)
         green_upper = (80, 255, 255)
-        self.tracking = True
         self.track_cmd = ''
         self.speed = 20
         self.tracker = Tracker(self.vid_stream.height, self.vid_stream.width, green_lower, green_upper)
-        self.key_listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
-        self.key_listener.start()
 
     def init_drone(self):
         self.drone.connect()
         self.drone.start_video()
+        with keyboard.Listener(on_press=self.on_press, on_release=self.on_release) as Listener:
+            Listener.join()
 
     def process_frame(self, frame):
         image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
@@ -69,16 +70,15 @@ class TelloCv(object):
         if key == keyboard.Key.up and self.tracking is False:
             self.tracking = True
             print('Tracking on')
-        elif key == keyboard.Key.down:
+        elif key == keyboard.Key.up and self.tracking is True:
             self.tracking = False
             print('Tracking off')
 
     def on_release(self, key):
         if key == keyboard.Key.esc:
+            self.drone.land()
+            self.drone.quit()
             return False
-
-
-
 
 
 if __name__ == '__main__':
