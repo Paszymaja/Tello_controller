@@ -85,8 +85,12 @@ def main():
 
         if args['preview']:
             preview = cv2.bitwise_and(image, image, mask=thresh)
+            cv2.namedWindow("Preview", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("Preview", 600, 600)
             cv2.imshow("Preview", preview)
         else:
+            cv2.namedWindow("Original", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("Original", 600, 600)
             cv2.imshow("Original", image)
             cv2.imshow("Thresh", thresh)
 

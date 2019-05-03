@@ -26,15 +26,15 @@ class Tracker:
         """Simple HSV color space tracking"""
         # resize the frame, blur it, and convert it to the HSV
         # color space
-        blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+        blurred = cv2.GaussianBlur(frame, (15, 15), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
         # construct a mask for the color then perform
         # a series of dilations and erosions to remove any small
         # blobs left in the mask
         mask = cv2.inRange(hsv, self.color_lower, self.color_upper)
-        mask = cv2.erode(mask, None, iterations=2)
-        mask = cv2.dilate(mask, None, iterations=2)
+        mask = cv2.erode(mask, None, iterations=4)
+        mask = cv2.dilate(mask, None, iterations=4)
 
         # find contours in the mask and initialize the current
         # (x, y) center of the ball
@@ -53,7 +53,7 @@ class Tracker:
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
             # only proceed if the radius meets a minimum size
-            if radius > 30: #zmieniłem z 10 do 30
+            if radius > 30: #zmieniłem z 10 do 20
                 # draw the circle and centroid on the frame,
                 # then update the list of tracked points
                 cv2.circle(frame, (int(x), int(y)), int(radius),

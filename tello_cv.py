@@ -1,6 +1,7 @@
 import av
 import tellopy
 import cv2
+import time
 import numpy as np
 from tracker import Tracker
 from pynput import keyboard
@@ -19,29 +20,33 @@ def main():
 class TelloCv(object):
     def __init__(self):
         self.drone = tellopy.Tello()
-        self.tracking = False
         self.init_drone()
-        self.drone.takeoff()
-        self.key = False
+        self.tracking = False
         self.container = av.open(self.drone.get_video_stream())
         self.vid_stream = self.container.streams.video[0]
+
+        # Settings
         green_lower = (30, 50, 50)
         green_upper = (80, 255, 255)
-        self.track_cmd = ''
+        self.wait_timer = 3
         self.speed = 20
+
+        self.track_cmd = ''
         self.tracker = Tracker(self.vid_stream.height, self.vid_stream.width, green_lower, green_upper)
+        self.cmd_timer = time.time()
 
     def init_drone(self):
         self.drone.connect()
         self.drone.start_video()
-        with keyboard.Listener(on_press=self.on_press, on_release=self.on_release) as Listener:
-            Listener.join()
+        key_listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
+        key_listener.start()
 
     def process_frame(self, frame):
         image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
         image = self.tracker.draw_arrows(image)
 
         distance = 100
+        now = time.time()
         xoff, yoff = self.tracker.track(image)
         cmd = ''
         if self.tracking:
@@ -59,10 +64,11 @@ class TelloCv(object):
                     self.track_cmd = ''
         if cmd is not self.track_cmd:
             if cmd is not '':
-                print(cmd)
-                getattr(self.drone, cmd)(self.speed)
-                self.track_cmd = cmd
-
+                if now - self.cmd_timer >= self.wait_timer:
+                    print(cmd)
+                    getattr(self.drone, cmd)(self.speed)
+                    self.track_cmd = cmd
+                    self.cmd_timer = now
         return image
 
     def on_press(self, key):
@@ -72,6 +78,9 @@ class TelloCv(object):
         elif key == keyboard.Key.up and self.tracking is True:
             self.tracking = False
             print('Tracking off')
+        elif key == keyboard.Key.space:
+            self.drone.takeoff()
+            print('Takeoff')
 
     def on_release(self, key):
         if key == keyboard.Key.esc:
